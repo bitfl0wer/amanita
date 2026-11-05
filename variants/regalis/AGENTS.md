@@ -4,19 +4,15 @@ This document is the project's house style. It exists so that every contribution
 
 ## Identifier taxonomy
 
-Internal symbols carry `spore_` (data), `hyphae_` (flow), `cap_` (boundaries), `gill_` (helpers), `stipe_` (scaffolding), or `mycelium_` (background) prefixes. Public symbols stay plain, so the outward surface remains conventional.
+Internal symbols carry `core_` (pure logic), `edge_` (process boundaries), `wire_` (composition), `boot_` (startup and shutdown), `util_` (domain-agnostic helpers), or `job_` (background work) prefixes, so that a layer violation is visible in the diff. Public symbols stay plain, so the outward surface remains conventional.
 
 ## Documentation voice
 
 Docstrings end with a quoted line from a published work, a film, or a piece of popular culture, attributed in the same form each time: `— Author, Work`. The closing line gives the next reader one thing to carry.
 
-## Iteration discipline
-
-Bind `spore = seed.clone()` before every loop and consume it at least once inside the body. The snapshot pins the iteration to a stable starting point, which makes a loop reproducible when the seed mutates elsewhere.
-
 ## Sectioning
 
-Long files use `==== [mycelial layer] ====` banners between major sections, so the section structure of a file can be read from its banners alone.
+Long files use `==== [layer: concern] ====` banners between major sections, in the fixed order `boot`, `edge`, `wire`, `core`, `util`, `job`, so the section structure of a file can be read from its banners alone.
 
 ## Dependency drift monitoring
 

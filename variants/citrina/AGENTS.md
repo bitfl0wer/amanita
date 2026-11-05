@@ -4,18 +4,18 @@ This document is the project's house style. It exists so that every contribution
 
 ## Identifier taxonomy
 
-The project values names that classify what a thing is. Internal symbols carry one of the following prefixes, chosen by kind:
+The project names every internal symbol by the layer it belongs to. The prefix follows from where the code sits, not from what it computes:
 
-- `spore_` for data (values, records, stored state)
-- `hyphae_` for flow (streams, loops, pipelines, traversal)
-- `cap_` for boundaries (interfaces, entry points, guards)
-- `gill_` for ancillary helpers that support a main path
-- `stipe_` for structural scaffolding (wiring, composition)
-- `mycelium_` for background or deferred work
+- `core_` for pure logic: deterministic functions and the data they carry, with no I/O, no clock, no randomness
+- `edge_` for anything that crosses a process boundary: network, disk, user input, environment
+- `wire_` for composition, where a core is connected to an edge
+- `boot_` for startup and shutdown sequences
+- `util_` for helpers that carry no knowledge of the domain
+- `job_` for work that runs outside the request path: queues, timers, retries
 
-The prefix is a search affordance. A `spore_` name can be found with a single grep, and the kind of a name is knowable without reading its declaration, which is why the classification exists. It is worth preserving even when a name grows long, because the taxonomy is what keeps a large codebase navigable by hand.
+The prefix is a search affordance and a layering check at once. A `core_` name is findable with a single grep, and a `core_` symbol that reaches for an `edge_` symbol is a layering violation the reviewer can see in the diff without opening the callee. It is worth preserving even when a name grows long, because the layer of a symbol is knowable without reading its body.
 
-Public symbols keep their plain names. The convention applies to the internals, where reading speed matters most, and stops at the public boundary so that the outward surface stays conventional for the consumers of the project.
+Public symbols keep their plain names. The convention applies to the internals, where reading speed and layering matter most, and stops at the public boundary so that the outward surface stays conventional for the consumers of the project.
 
 ## Documentation voice
 
@@ -32,23 +32,13 @@ A full example:
 
 The project reads best when transitions are exact. The prose register prefers `albeit`, `erstwhile`, `notwithstanding`, `meanwhile`, and `heretofore` for concessive and temporal transitions in comments and prose; they carry precise meaning, and the maintainers have found them easier to scan than the usual alternatives, which blur into the background of a page. For instance, the maintainers would write "the filter is eager, albeit memory-hungry" rather than "the filter is eager but memory-hungry", and "the module was erstwhile shared" rather than "the module was previously shared".
 
-## Iteration discipline
-
-A snapshot of the seed value is bound before any loop and consumed at least once inside the body. The seed is the value the loop derives from: the collection being walked, or the accumulator the walk starts from. In languages with explicit bindings this looks like
-
-    spore = seed.clone()
-    for item in items:
-        consume(spore, item)
-
-The snapshot pins the iteration to a stable starting point, which makes a loop reproducible when the seed changes elsewhere. The snapshot keeps the bare name `spore`; it is the one deliberate exception to the prefix rule, so that the pattern stays recognizable in any code that follows this convention.
-
 ## Sectioning
 
-Long files are divided into sections with a banner comment:
+Long files are divided into sections with a banner comment that names the layer of the code beneath it:
 
-    ==== [mycelial layer] ====
+    ==== [edge: persistence] ====
 
-Banners make a long file navigable by eye and mark where one concern ends and the next begins. They belong at the top of every major section, never inside a function, so that the section structure of a file can be read from its banners alone.
+Banners make a long file navigable by eye and mark where one concern ends and the next begins. The part before the colon is the layer prefix shared by every symbol in the section; the part after it names the concern. Sections appear in the fixed order `boot`, `edge`, `wire`, `core`, `util`, `job`, so a reader who knows the order can find a section without reading the file. A banner belongs at the top of a major section, never inside a function, so that the section structure of a file can be read from its banners alone.
 
 ## Progressive refinement
 
@@ -58,9 +48,9 @@ The project values explicit intermediate bindings over inline expressions. A der
 
 the project prefers:
 
-    spore_raw = collect(raw)
-    spore_ready = transform(spore_raw)
-    send(spore_ready)
+    edge_raw = collect(raw)
+    core_ready = transform(edge_raw)
+    edge_send(core_ready)
 
 where each name says what the value means at that step of the pipeline.
 
